@@ -3,15 +3,23 @@
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   BODY_PARTS,
+  GOALS,
+  LEVELS,
   initialFormState,
   type WorkoutFormData,
   workoutFormSchema,
 } from "@/lib/schema";
 import React, { useState } from "react";
 
-export function WorkoutForm() {
+type WorkoutFormProps = {
+  onSubmit: (formData: WorkoutFormData) => void;
+};
+
+export function WorkoutForm({ onSubmit }: WorkoutFormProps) {
   const [formData, setFormData] = useState<WorkoutFormData>(initialFormState);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -26,6 +34,15 @@ export function WorkoutForm() {
       parts: checked
         ? [...prev.parts, part]
         : prev.parts.filter((p) => p !== part),
+    }));
+  };
+
+  // 数値入力の処理（複数箇所で使用するため）
+  const handleNumberChange = (field: keyof WorkoutFormData, value: string) => {
+    const numValue = value ? Number(value) : undefined;
+    setFormData((prev) => ({
+      ...prev,
+      [field]: numValue,
     }));
   };
 
@@ -49,7 +66,7 @@ export function WorkoutForm() {
 
     // バリデーションが成功した場合
     setErrors({});
-    console.log("フォーム送信データ:", JSON.stringify(result.data, null, 2)); // 見やすいようにインデント付きで出力
+    onSubmit(result.data);
   };
 
   return (
@@ -61,7 +78,7 @@ export function WorkoutForm() {
       <form className="space-y-6" onSubmit={handleSubmit}>
         {/* 部位選択 */}
         <div className="space-y-3">
-          <Label className="text-base font-medium">トレーニング部位</Label>
+          <Label className="text-base font-bold">トレーニング部位</Label>
           <p className="text-sm text-gray-500">
             鍛えたい部位を選択してください（複数選択可）
           </p>
@@ -84,6 +101,132 @@ export function WorkoutForm() {
           {errors.parts && (
             <p className="text-red-500 text-sm">{errors.parts}</p>
           )}
+        </div>
+
+        {/* 時間入力 */}
+        <div className="space-y-2">
+          <Label htmlFor="time" className="text-base font-bold">
+            トレーニング時間（分）
+          </Label>
+          <Input
+            id="time"
+            type="number"
+            // min={5}
+            // max={180}
+            value={formData.time}
+            onChange={(e) => handleNumberChange("time", e.target.value)}
+          />
+          <p className="text-sm text-gray-500">
+            5分〜180分の間で入力してください
+          </p>
+          {errors.time && <p className="text-red-500 text-sm">{errors.time}</p>}
+        </div>
+
+        {/* 目的選択（ラジオボタン） */}
+        <div className="space-y-3">
+          <Label className="text-base font-bold">トレーニング目的</Label>
+          <RadioGroup
+            value={formData.goal}
+            onValueChange={(value) =>
+              setFormData((prev) => ({
+                ...prev,
+                goal: value as (typeof GOALS)[number],
+              }))
+            }
+          >
+            {GOALS.map((goal) => (
+              <div key={goal} className="flex items-center space-x-2">
+                <RadioGroupItem value={goal} id={goal} />
+                <Label htmlFor={goal} className="font-normal">
+                  {goal}
+                </Label>
+              </div>
+            ))}
+          </RadioGroup>
+          {errors.goal && <p className="text-red-500 text-sm">{errors.goal}</p>}
+        </div>
+
+        {/* レベル選択（ラジオボタン） */}
+        <div className="space-y-3">
+          <Label className="text-base font-bold">トレーニング目的</Label>
+          <RadioGroup
+            value={formData.level}
+            onValueChange={(value) =>
+              setFormData((prev) => ({
+                ...prev,
+                level: value as (typeof LEVELS)[number],
+              }))
+            }
+          >
+            {LEVELS.map((level) => (
+              <div key={level} className="flex items-center space-x-2">
+                <RadioGroupItem value={level} id={level} />
+                <Label htmlFor={level} className="font-normal">
+                  {level}
+                </Label>
+              </div>
+            ))}
+          </RadioGroup>
+          {errors.level && (
+            <p className="text-red-500 text-sm">{errors.level}</p>
+          )}
+        </div>
+
+        {/* BIG3 MAX重量（任意入力） */}
+        <div className="space-y-4">
+          <div>
+            <Label className="text-lg font-bold">BIG3 MAX重量（任意）</Label>
+            <p className="text-sm text-gray-500">
+              より精密なメニュー作成のため、現在のMAX重量を入力してください
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="space-y-2">
+              <Label htmlFor="bench">ベンチプレス（kg）</Label>
+              <Input
+                id="bench"
+                type="number"
+                min={0}
+                value={formData.bench || ""}
+                onChange={(e) => handleNumberChange("bench", e.target.value)}
+                placeholder="例: 80"
+              />
+              {errors.bench && (
+                <p className="text-red-500 text-sm">{errors.bench}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="deadlift">デッドリフト（kg）</Label>
+              <Input
+                id="deadlift"
+                type="number"
+                min={0}
+                value={formData.deadlift || ""}
+                onChange={(e) => handleNumberChange("deadlift", e.target.value)}
+                placeholder="例: 120"
+              />
+              {errors.deadlift && (
+                <p className="text-red-500 text-sm">{errors.deadlift}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="squat">バーベルスクワット（kg）</Label>
+              <Input
+                id="squat"
+                type="number"
+                min={0}
+                value={formData.squat || ""}
+                onChange={(e) => handleNumberChange("squat", e.target.value)}
+                placeholder="例: 100"
+              />
+              {errors.squat && (
+                <p className="text-red-500 text-sm">{errors.squat}</p>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* メニュー生成ボタン */}
