@@ -1,3 +1,5 @@
+"use server";
+
 import { Agent, run } from "@openai/agents";
 import { WorkoutFormData, WorkoutMenu, workoutMenuSchema } from "@/lib/schema";
 
