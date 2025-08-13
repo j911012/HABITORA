@@ -20,8 +20,20 @@ export const workoutFormSchema = z.object({
   squat: z.number().optional(),
 });
 
+// 出力メニュー用Zodスキーマの定義
+export const workoutMenuSchema = z.array(
+  z.object({
+    exercise: z.string().min(1, "種目名は必須です"),
+    sets: z.number().int().min(1).max(10),
+    reps: z.number().int().min(1).max(30),
+    restSec: z.number().int().min(0).max(300),
+  })
+);
+
 // TypeScriptの型定義
 export type WorkoutFormData = z.infer<typeof workoutFormSchema>;
+export type WorkoutMenu = z.infer<typeof workoutMenuSchema>;
+export type WorkoutMenuRow = z.infer<typeof workoutMenuSchema>[number];
 
 // 選択肢の定数定義
 export const BODY_PARTS = ["胸", "背中", "肩", "腕", "脚", "全身"] as const;
