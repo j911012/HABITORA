@@ -27,6 +27,10 @@ export const workoutMenuSchema = z.array(
     sets: z.number().int().min(1).max(10),
     reps: z.number().int().min(1).max(30),
     restSec: z.number().int().min(0).max(300),
+    weight: z.object({
+      isBodyweight: z.boolean(), // true: 自重, false: 荷重
+      value: z.number().optional(),
+    }),
   })
 );
 
