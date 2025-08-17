@@ -4,7 +4,8 @@ import { Agent, run } from "@openai/agents";
 import { WorkoutFormData, WorkoutMenu, workoutMenuSchema } from "@/lib/schema";
 
 export async function generateWorkout(
-  formData: WorkoutFormData
+  formData: WorkoutFormData,
+  previousMenu?: WorkoutMenu
 ): Promise<{ data?: WorkoutMenu; error?: string }> {
   try {
     // OpenAI APIキー
@@ -12,6 +13,9 @@ export async function generateWorkout(
     if (!apiKey) {
       throw new Error("OpenAI APIキーが設定されていません");
     }
+
+    //前回メニューがあれば、その exercise 名を配列で抽出。無ければ空配列にする
+    const prevExercises = previousMenu?.map((row) => row.exercise) ?? [];
 
     // エージェント作成
     const agent = new Agent({
@@ -45,7 +49,11 @@ export async function generateWorkout(
   - シェイプアップ: 12-20回, 40-60% 1RM
 - BIG3のMAX重量が提供された場合、それを基準に%を計算
 - BIG3以外の種目は経験レベルに応じて適切な重量を設定
-- 例外なくJSON配列のみ返すこと`,
+- 例外なくJSON配列のみ返すこと
+
+**再生成ルール**
+- 可能な限り前回の種目と50%以上かぶらないようにバリエーションを出すこと
+- どうしても外せない基礎種目は、ボリューム配分やレスト/回数を変えて差別化すること`,
     });
 
     // エージェント実行
