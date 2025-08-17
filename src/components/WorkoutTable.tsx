@@ -1,12 +1,19 @@
 "use client";
 
 import { type WorkoutMenu, type WorkoutMenuRow } from "@/lib/schema";
+import { Button } from "@/components/ui/button";
 
 type WorkoutTableProps = {
   menu: WorkoutMenu;
+  onRegenerate: () => void;
+  isRegenerating: boolean;
 };
 
-export function WorkoutTable({ menu }: WorkoutTableProps) {
+export function WorkoutTable({
+  menu,
+  onRegenerate,
+  isRegenerating,
+}: WorkoutTableProps) {
   // 自重の場合は"自重"、荷重の場合は"kg"を表
   const formatWeight = (weight: WorkoutMenuRow["weight"]) => {
     if (weight.isBodyweight) {
@@ -60,6 +67,24 @@ export function WorkoutTable({ menu }: WorkoutTableProps) {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <p className="text-sm text-gray-600">
+          ※このメニューはAIが自動生成した参考プランです。医療・専門家の指導を代替するものではありません。
+        </p>
+      </div>
+
+      {/* 再生成ボタン */}
+      <div className="mt-6 flex justify-center">
+        <Button
+          onClick={onRegenerate}
+          disabled={isRegenerating}
+          variant="outline"
+          className="w-[300px]"
+        >
+          {isRegenerating ? "メニューを再生成中..." : "メニューを再生成"}
+        </Button>
       </div>
     </div>
   );

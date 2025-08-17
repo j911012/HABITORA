@@ -10,6 +10,11 @@ export default function Home() {
   const [workoutMenu, setWorkoutMenu] = useState<WorkoutMenu | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // 再生成用の前回のformData
+  const [lastFormData, setLastFormData] = useState<WorkoutFormData | null>(
+    null
+  );
+  const [isRegenerating, setIsRegenerating] = useState(false);
 
   const handleFormSubmit = async (formData: WorkoutFormData) => {
     console.log("フォーム送信データ:", JSON.stringify(formData, null, 2)); // 見やすいようにインデント付きで出力
@@ -22,10 +27,10 @@ export default function Home() {
 
       if (result.error) {
         setError(result.error);
-        setWorkoutMenu(null);
       } else if (result.data) {
         setWorkoutMenu(result.data);
-        setError(null);
+        // 再生成用に前回のformDataを保持
+        setLastFormData(formData);
       }
     } catch (err) {
       console.error("エラー:", err);
@@ -33,6 +38,33 @@ export default function Home() {
       setWorkoutMenu(null);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // 再生成ハンドラー
+  const handleRegenerate = async () => {
+    if (!lastFormData) return;
+
+    setIsRegenerating(true);
+    setError(null);
+
+    try {
+      // 直前のメニューをヒントにサーバへ「被りを避ける」指示
+      const result = await generateWorkout(
+        lastFormData,
+        workoutMenu ?? undefined
+      );
+
+      if (result.error) {
+        setError(result.error);
+      } else if (result.data) {
+        setWorkoutMenu(result.data);
+      }
+    } catch (e) {
+      console.error(e);
+      setError("メニューの再生成でエラーが発生しました");
+    } finally {
+      setIsRegenerating(false);
     }
   };
 
@@ -59,7 +91,13 @@ export default function Home() {
             </div>
           )}
 
-          {workoutMenu && <WorkoutTable menu={workoutMenu} />}
+          {workoutMenu && (
+            <WorkoutTable
+              menu={workoutMenu}
+              onRegenerate={handleRegenerate}
+              isRegenerating={isRegenerating}
+            />
+          )}
         </div>
       </div>
     </div>
