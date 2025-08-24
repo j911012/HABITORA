@@ -1,7 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { type WorkoutMenu, type WorkoutMenuRow } from "@/lib/schema";
 import { Button } from "@/components/ui/button";
+import { startWorkout } from "@/app/actions/startWorkout";
+import { useRouter } from "next/navigation";
 
 type WorkoutTableProps = {
   menu: WorkoutMenu;
@@ -14,12 +17,35 @@ export function WorkoutTable({
   onRegenerate,
   isRegenerating,
 }: WorkoutTableProps) {
+  const [isStartWorkout, setIsStartWorkout] = useState(false);
+  const router = useRouter();
+
   // 自重の場合は"自重"、荷重の場合は"kg"を表
   const formatWeight = (weight: WorkoutMenuRow["weight"]) => {
     if (weight.isBodyweight) {
       return "自重";
     }
     return weight.value ? `${weight.value}kg` : "-";
+  };
+
+  // ワークアウト開始ボタンのクリックハンドラー
+  const handleStartWorkout = async () => {
+    setIsStartWorkout(true);
+    try {
+      const result = await startWorkout(menu);
+
+      if (result.error) {
+        alert(`ワークアウト開始に失敗しました: ${result.error}`);
+      } else if (result.sessionId) {
+        // セッションページにリダイレクト
+        router.push(`/workout/${result.sessionId}`);
+      }
+    } catch (error) {
+      console.error("ワークアウト開始エラー:", error);
+      alert("ワークアウト開始に失敗しました");
+    } finally {
+      setIsStartWorkout(false);
+    }
   };
 
   return (
@@ -76,10 +102,22 @@ export function WorkoutTable({
       </div>
 
       {/* 再生成ボタン */}
-      <div className="mt-6 flex justify-center">
+      <div className="mt-6 flex flex-col gap-4 items-center">
+        {/* 開始ボタン */}
+        <Button
+          onClick={handleStartWorkout}
+          disabled={isStartWorkout || isRegenerating}
+          className="w-[300px] bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          {isStartWorkout
+            ? "ワークアウトを開始中..."
+            : "このメニューで開始する"}
+        </Button>
+
+        {/* 再生成ボタン */}
         <Button
           onClick={onRegenerate}
-          disabled={isRegenerating}
+          disabled={isRegenerating || isStartWorkout}
           variant="outline"
           className="w-[300px]"
         >
