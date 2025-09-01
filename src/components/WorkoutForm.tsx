@@ -38,8 +38,11 @@ export function WorkoutForm({ onSubmit }: WorkoutFormProps) {
   };
 
   // 数値入力の処理（複数箇所で使用するため）
-  const handleNumberChange = (field: keyof WorkoutFormData, value: string) => {
-    const numValue = value ? Number(value) : undefined;
+  const handleNumberChange = (
+    field: "time" | "bench" | "deadlift" | "squat",
+    value: string
+  ) => {
+    const numValue = value === "" ? undefined : Number(value);
     setFormData((prev) => ({
       ...prev,
       [field]: numValue,
@@ -113,7 +116,7 @@ export function WorkoutForm({ onSubmit }: WorkoutFormProps) {
             type="number"
             // min={5}
             // max={180}
-            value={formData.time}
+            value={formData.time ?? ""}
             onChange={(e) => handleNumberChange("time", e.target.value)}
           />
           <p className="text-sm text-gray-500">
@@ -188,7 +191,7 @@ export function WorkoutForm({ onSubmit }: WorkoutFormProps) {
                 id="bench"
                 type="number"
                 min={0}
-                value={formData.bench || ""}
+                value={formData.bench ?? ""}
                 onChange={(e) => handleNumberChange("bench", e.target.value)}
                 placeholder="例: 80"
               />
@@ -203,7 +206,7 @@ export function WorkoutForm({ onSubmit }: WorkoutFormProps) {
                 id="deadlift"
                 type="number"
                 min={0}
-                value={formData.deadlift || ""}
+                value={formData.deadlift ?? ""}
                 onChange={(e) => handleNumberChange("deadlift", e.target.value)}
                 placeholder="例: 120"
               />
@@ -218,7 +221,7 @@ export function WorkoutForm({ onSubmit }: WorkoutFormProps) {
                 id="squat"
                 type="number"
                 min={0}
-                value={formData.squat || ""}
+                value={formData.squat ?? ""}
                 onChange={(e) => handleNumberChange("squat", e.target.value)}
                 placeholder="例: 100"
               />

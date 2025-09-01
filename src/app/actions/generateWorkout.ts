@@ -1,7 +1,12 @@
 "use server";
 
 import { Agent, run } from "@openai/agents";
-import { WorkoutFormData, WorkoutMenu, workoutMenuSchema } from "@/lib/schema";
+import {
+  WorkoutFormData,
+  workoutFormSchema,
+  WorkoutMenu,
+  workoutMenuSchema,
+} from "@/lib/schema";
 
 export async function generateWorkout(
   formData: WorkoutFormData,
@@ -13,6 +18,13 @@ export async function generateWorkout(
     if (!apiKey) {
       throw new Error("OpenAI APIキーが設定されていません");
     }
+
+    // フォームデータをバリデーション
+    const parsed = workoutFormSchema.safeParse(formData);
+    if (!parsed.success) {
+      return { error: "フォームデータが正しくありません" };
+    }
+    const validData = parsed.data;
 
     //前回メニューがあれば、その exercise 名を配列で抽出。無ければ空配列にする
     const prevExercises = previousMenu?.map((row) => row.exercise) ?? [];
@@ -59,7 +71,7 @@ export async function generateWorkout(
     // エージェント実行
     const result = await run(
       agent,
-      `ユーザーの筋トレ要求: ${JSON.stringify(formData)}`
+      `ユーザーの筋トレ要求: ${JSON.stringify(validData)}`
     );
 
     // 結果の取得
