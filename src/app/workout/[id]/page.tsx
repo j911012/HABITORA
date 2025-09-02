@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { WorkoutMenu } from "@/lib/schema";
 
 // UI表示用: Supabaseの想定スキーマ（session_exercises / session_sets）に沿った形
 type UiSet = {
@@ -16,7 +15,13 @@ type UiExercise = {
   sets: UiSet[];
 };
 
-export default function WorkoutPage({ params }: { params: { id: string } }) {
+export default async function WorkoutPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+
   // ダミーデータ
   const exercises: UiExercise[] = [
     {
@@ -58,7 +63,7 @@ export default function WorkoutPage({ params }: { params: { id: string } }) {
           <header className="flex flex-col gap-3">
             <div>
               <h1 className="text-2xl font-bold">ワークアウト</h1>
-              <p className="text-sm text-gray-500">セッションID: {params.id}</p>
+              <p className="text-sm text-gray-500">セッションID: {id}</p>
             </div>
             <div className="mt-2 flex items-center justify-between gap-3">
               <Link href="/" className="inline-block">
