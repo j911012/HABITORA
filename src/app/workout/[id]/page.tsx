@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
+import { WorkoutSessionSync } from "@/components/WorkoutSessionSync";
+import { CompleteWorkoutButton } from "@/components/CompleteWorkoutButton";
 
 export const dynamic = "force-dynamic";
 
@@ -61,6 +63,7 @@ export default async function WorkoutPage({
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+      <WorkoutSessionSync sessionId={id} />
       <div className="container mx-auto px-4">
         <div className="w-full max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
           <header className="flex flex-col gap-3">
@@ -163,7 +166,7 @@ export default async function WorkoutPage({
           </div>
 
           <div className="mt-8 flex justify-center">
-            <Button className="w-[300px]">ワークアウトを完了</Button>
+            <CompleteWorkoutButton sessionId={id} />
           </div>
         </div>
       </div>

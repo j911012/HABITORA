@@ -37,6 +37,8 @@ export function WorkoutTable({
       if (result.error) {
         alert(`ワークアウト開始に失敗しました: ${result.error}`);
       } else if (result.sessionId) {
+        // セッションIDをローカルストレージに保存
+        localStorage.setItem("activeWorkoutSessionId", result.sessionId);
         // セッションページにリダイレクト
         router.push(`/workout/${result.sessionId}`);
       }
