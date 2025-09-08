@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { WorkoutForm } from "@/components/WorkoutForm";
 import { WorkoutFormData, WorkoutMenu } from "@/lib/schema";
 import { generateWorkout } from "./actions/generateWorkout";
 import { WorkoutTable } from "@/components/WorkoutTable";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { getSessionStatus } from "@/app/actions/getSessionStatus";
 
 export default function Home() {
   const [workoutMenu, setWorkoutMenu] = useState<WorkoutMenu | null>(null);
@@ -15,6 +18,28 @@ export default function Home() {
     null
   );
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+
+  // ローカルストレージからセッションIDを取得
+  console.log("activeSessionId", activeSessionId);
+  useEffect(() => {
+    const checkSessionStatus = async () => {
+      const id = localStorage.getItem("activeWorkoutSessionId");
+      if (!id) return;
+
+      // セッションが有効かどうかをチェック
+      const { isValid } = await getSessionStatus(id);
+      if (isValid) {
+        setActiveSessionId(id);
+      } else {
+        // 無効なセッションIDの場合は削除
+        localStorage.removeItem("activeWorkoutSessionId");
+        setActiveSessionId(null);
+      }
+    };
+
+    checkSessionStatus();
+  }, []);
 
   const handleFormSubmit = async (formData: WorkoutFormData) => {
     console.log("フォーム送信データ:", JSON.stringify(formData, null, 2)); // 見やすいようにインデント付きで出力
@@ -97,6 +122,16 @@ export default function Home() {
               onRegenerate={handleRegenerate}
               isRegenerating={isRegenerating}
             />
+          )}
+
+          {activeSessionId && (
+            <div className="flex justify-center">
+              <Link href={`/workout/${activeSessionId}`}>
+                <Button variant="secondary" className="w-[300px]">
+                  ワークアウトに戻る
+                </Button>
+              </Link>
+            </div>
           )}
         </div>
       </div>

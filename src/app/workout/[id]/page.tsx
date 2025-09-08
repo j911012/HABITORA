@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/server";
+import { notFound } from "next/navigation";
+import { WorkoutSessionSync } from "@/components/WorkoutSessionSync";
+import { CompleteWorkoutButton } from "@/components/CompleteWorkoutButton";
 
-// UI表示用: Supabaseの想定スキーマ（session_exercises / session_sets）に沿った形
+export const dynamic = "force-dynamic";
+
 type UiSet = {
   setNumber: number;
   targetReps: number;
@@ -21,43 +26,44 @@ export default async function WorkoutPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const supabase = await createClient();
 
-  // ダミーデータ
-  const exercises: UiExercise[] = [
-    {
-      id: "ex1",
-      name: "ベンチプレス",
-      isBodyweight: false,
-      sets: [
-        { setNumber: 1, targetReps: 8, targetWeight: 60 },
-        { setNumber: 2, targetReps: 8, targetWeight: 60 },
-        { setNumber: 3, targetReps: 8, targetWeight: 60 },
-      ],
-    },
-    {
-      id: "ex2",
-      name: "チンニング",
-      isBodyweight: true,
-      sets: [
-        { setNumber: 1, targetReps: 10 },
-        { setNumber: 2, targetReps: 8 },
-        { setNumber: 3, targetReps: 6 },
-      ],
-    },
-    {
-      id: "ex3",
-      name: "バーベルスクワット",
-      isBodyweight: false,
-      sets: [
-        { setNumber: 1, targetReps: 10, targetWeight: 70 },
-        { setNumber: 2, targetReps: 10, targetWeight: 70 },
-        { setNumber: 3, targetReps: 10, targetWeight: 70 },
-      ],
-    },
-  ];
+  const { data, error } = await supabase
+    .from("session_exercises")
+    .select(
+      `
+      id,
+      name,
+      is_bodyweight,
+      order_index,
+      session_sets (
+        set_number,
+        target_reps,
+        target_weight
+      )
+    `
+    )
+    .eq("session_id", id)
+    .order("order_index", { ascending: true })
+    .order("set_number", { ascending: true, foreignTable: "session_sets" });
+
+  if (error) return <div>エラーが発生しました: {error.message}</div>;
+  if (!data || data.length === 0) return notFound();
+
+  const exercises: UiExercise[] = data.map((exercise) => ({
+    id: exercise.id,
+    name: exercise.name,
+    isBodyweight: exercise.is_bodyweight,
+    sets: exercise.session_sets.map((set) => ({
+      setNumber: set.set_number,
+      targetReps: set.target_reps,
+      targetWeight: set.target_weight,
+    })),
+  }));
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+      <WorkoutSessionSync sessionId={id} />
       <div className="container mx-auto px-4">
         <div className="w-full max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
           <header className="flex flex-col gap-3">
@@ -160,7 +166,7 @@ export default async function WorkoutPage({
           </div>
 
           <div className="mt-8 flex justify-center">
-            <Button className="w-[300px]">ワークアウトを完了</Button>
+            <CompleteWorkoutButton sessionId={id} />
           </div>
         </div>
       </div>
