@@ -1,0 +1,157 @@
+"use client";
+
+import { useCallback, useState, useTransition } from "react";
+import { updateSessionSet } from "@/app/actions/updateSessionSet";
+import { Button } from "./ui/button";
+
+type EditableSetRowProps = {
+  setId: string;
+  setNumber: number;
+  isBodyweight: boolean;
+  initialTargetReps: number;
+  initialTargetWeight?: number | null;
+};
+
+export function EditableSetRow({
+  setId,
+  setNumber,
+  isBodyweight,
+  initialTargetReps,
+  initialTargetWeight,
+}: EditableSetRowProps) {
+  const [reps, setReps] = useState(initialTargetReps);
+  const [weight, setWeight] = useState<number | "">(initialTargetWeight ?? "");
+  const [memo, setMemo] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  // セットを更新する
+  const handleSave = useCallback(() => {
+    setError(null);
+    setSuccess(null);
+
+    // // 入力バリデーション
+    if (!Number.isFinite(reps) || reps < 1) {
+      setError("回数は1以上の整数で入力してください");
+      return;
+    }
+    if (!isBodyweight) {
+      if (weight === "") {
+        // 空ならnull保存（未指定）
+      } else if (typeof weight === "number" && weight < 0) {
+        setError("重量は0以上の数値で入力してください");
+        return;
+      }
+    }
+
+    const targetWeight = isBodyweight ? null : weight === "" ? null : weight;
+
+    startTransition(async () => {
+      const result = await updateSessionSet({
+        setId,
+        targetReps: reps,
+        targetWeight,
+      });
+
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      setSuccess("セットを更新しました");
+      // 1.5秒後にエラーメッセージをクリア
+      setTimeout(() => {
+        setSuccess(null);
+      }, 1500);
+    });
+  }, [reps, weight, isBodyweight, setId]);
+
+  // エンターキーでセットを更新
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleSave();
+      }
+    },
+    [handleSave]
+  );
+
+  return (
+    <li className="p-4">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium text-gray-500">
+          Set {setNumber}
+        </span>
+        <span className="text-xs text-gray-400">RM —</span>
+      </div>
+
+      <div
+        className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3"
+        onKeyDown={handleKeyDown}
+      >
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-gray-600 shrink-0 w-14">重量</label>
+          {isBodyweight ? (
+            <span className="text-gray-700 text-sm">自重</span>
+          ) : (
+            <div className="flex items-center gap-2 w-full">
+              <input
+                type="number"
+                className="w-full h-10 border rounded px-3 text-sm"
+                value={weight}
+                onChange={(e) => setWeight(Number(e.target.value))}
+                placeholder="kg"
+                min={0}
+                step={0.25}
+                disabled={isPending}
+              />
+              <span className="text-gray-500 text-sm shrink-0">kg</span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-gray-600 shrink-0 w-14">回数</label>
+          <div className="flex items-center gap-2 w-full">
+            <input
+              type="number"
+              className="w-full h-10 border rounded px-3 text-sm"
+              value={reps}
+              onChange={(e) => setReps(Number(e.target.value))}
+              placeholder="回数"
+              min={1}
+              disabled={isPending}
+            />
+            <span className="text-gray-500 text-sm shrink-0">回</span>
+          </div>
+        </div>
+
+        <div className="sm:col-span-1">
+          <label className="sr-only">メモ</label>
+          <input
+            type="text"
+            className="w-full h-10 border rounded px-3 text-sm"
+            placeholder="メモ（任意）"
+            value={memo}
+            onChange={(e) => setMemo(e.target.value)}
+            disabled={isPending}
+          />
+        </div>
+      </div>
+
+      <div className="mt-3 flex items-center gap-3">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={handleSave}
+          disabled={isPending}
+        >
+          {isPending ? "保存中..." : "保存"}
+        </Button>
+        {error && <p className="text-red-500 text-sm">{error}</p>}
+        {success && <p className="text-green-500 text-sm">{success}</p>}
+      </div>
+    </li>
+  );
+}
