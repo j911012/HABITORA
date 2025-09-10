@@ -2,7 +2,6 @@
 
 import { useCallback, useState, useTransition } from "react";
 import { updateSessionSet } from "@/app/actions/updateSessionSet";
-import { Button } from "./ui/button";
 
 type EditableSetRowProps = {
   setId: string;
@@ -23,13 +22,11 @@ export function EditableSetRow({
   const [weight, setWeight] = useState<number | "">(initialTargetWeight ?? "");
   const [memo, setMemo] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   // セットを更新する
   const handleSave = useCallback(() => {
     setError(null);
-    setSuccess(null);
 
     // // 入力バリデーション
     if (!Number.isFinite(reps) || reps < 1) {
@@ -58,11 +55,6 @@ export function EditableSetRow({
         setError(result.error);
         return;
       }
-      setSuccess("セットを更新しました");
-      // 1.5秒後にエラーメッセージをクリア
-      setTimeout(() => {
-        setSuccess(null);
-      }, 1500);
     });
   }, [reps, weight, isBodyweight, setId]);
 
@@ -101,9 +93,11 @@ export function EditableSetRow({
                 className="w-full h-10 border rounded px-3 text-sm"
                 value={weight}
                 onChange={(e) => setWeight(Number(e.target.value))}
+                onBlur={handleSave}
                 placeholder="kg"
                 min={0}
                 step={0.25}
+                inputMode="decimal"
                 disabled={isPending}
               />
               <span className="text-gray-500 text-sm shrink-0">kg</span>
@@ -119,6 +113,7 @@ export function EditableSetRow({
               className="w-full h-10 border rounded px-3 text-sm"
               value={reps}
               onChange={(e) => setReps(Number(e.target.value))}
+              onBlur={handleSave}
               placeholder="回数"
               min={1}
               disabled={isPending}
@@ -135,22 +130,14 @@ export function EditableSetRow({
             placeholder="メモ（任意）"
             value={memo}
             onChange={(e) => setMemo(e.target.value)}
+            onBlur={handleSave}
             disabled={isPending}
           />
         </div>
       </div>
 
       <div className="mt-3 flex items-center gap-3">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={handleSave}
-          disabled={isPending}
-        >
-          {isPending ? "保存中..." : "保存"}
-        </Button>
         {error && <p className="text-red-500 text-sm">{error}</p>}
-        {success && <p className="text-green-500 text-sm">{success}</p>}
       </div>
     </li>
   );

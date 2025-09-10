@@ -151,7 +151,7 @@ export function WorkoutForm({ onSubmit }: WorkoutFormProps) {
 
         {/* レベル選択（ラジオボタン） */}
         <div className="space-y-3">
-          <Label className="text-base font-bold">トレーニング目的</Label>
+          <Label className="text-base font-bold">トレーニングレベル</Label>
           <RadioGroup
             value={formData.level}
             onValueChange={(value) =>
