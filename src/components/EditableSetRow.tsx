@@ -18,7 +18,7 @@ export function EditableSetRow({
   initialTargetReps,
   initialTargetWeight,
 }: EditableSetRowProps) {
-  const [reps, setReps] = useState(initialTargetReps);
+  const [reps, setReps] = useState<number | "">(initialTargetReps);
   const [weight, setWeight] = useState<number | "">(initialTargetWeight ?? "");
   const [memo, setMemo] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +29,7 @@ export function EditableSetRow({
     setError(null);
 
     // // 入力バリデーション
-    if (!Number.isFinite(reps) || reps < 1) {
+    if (reps === "" || reps < 1) {
       setError("回数は1以上の整数で入力してください");
       return;
     }
@@ -92,7 +92,9 @@ export function EditableSetRow({
                 type="number"
                 className="w-full h-10 border rounded px-3 text-sm"
                 value={weight}
-                onChange={(e) => setWeight(Number(e.target.value))}
+                onChange={(e) =>
+                  setWeight(e.target.value === "" ? "" : Number(e.target.value))
+                }
                 onBlur={handleSave}
                 placeholder="kg"
                 min={0}
@@ -112,7 +114,9 @@ export function EditableSetRow({
               type="number"
               className="w-full h-10 border rounded px-3 text-sm"
               value={reps}
-              onChange={(e) => setReps(Number(e.target.value))}
+              onChange={(e) =>
+                setReps(e.target.value === "" ? "" : Number(e.target.value))
+              }
               onBlur={handleSave}
               placeholder="回数"
               min={1}
