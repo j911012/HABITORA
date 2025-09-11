@@ -6,12 +6,14 @@ type UpdateSessionSetInput = {
   setId: string;
   targetReps: number;
   targetWeight: number | null;
+  memo: string | null;
 };
 
 export async function updateSessionSet({
   setId,
   targetReps,
   targetWeight,
+  memo,
 }: UpdateSessionSetInput) {
   const supabase = await createClient();
 
@@ -24,6 +26,7 @@ export async function updateSessionSet({
     .update({
       target_reps: targetReps,
       target_weight: targetWeight,
+      memo: memo,
       updated_at: new Date().toISOString(),
     })
     .eq("id", setId);

@@ -9,6 +9,7 @@ type EditableSetRowProps = {
   isBodyweight: boolean;
   initialTargetReps: number;
   initialTargetWeight?: number | null;
+  initialMemo?: string | null;
 };
 
 export function EditableSetRow({
@@ -17,10 +18,11 @@ export function EditableSetRow({
   isBodyweight,
   initialTargetReps,
   initialTargetWeight,
+  initialMemo,
 }: EditableSetRowProps) {
   const [reps, setReps] = useState<number | "">(initialTargetReps);
   const [weight, setWeight] = useState<number | "">(initialTargetWeight ?? "");
-  const [memo, setMemo] = useState("");
+  const [memo, setMemo] = useState(initialMemo ?? "");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -49,6 +51,7 @@ export function EditableSetRow({
         setId,
         targetReps: reps,
         targetWeight,
+        memo,
       });
 
       if (result.error) {
@@ -56,7 +59,7 @@ export function EditableSetRow({
         return;
       }
     });
-  }, [reps, weight, isBodyweight, setId]);
+  }, [reps, weight, isBodyweight, setId, memo]);
 
   // エンターキーでセットを更新
   const handleKeyDown = useCallback(

@@ -13,6 +13,7 @@ type UiSet = {
   setNumber: number;
   targetReps: number;
   targetWeight?: number | null;
+  memo?: string | null;
 };
 
 type UiExercise = {
@@ -42,7 +43,8 @@ export default async function WorkoutPage({
         id,
         set_number,
         target_reps,
-        target_weight
+        target_weight,
+        memo
       )
     `
     )
@@ -62,6 +64,7 @@ export default async function WorkoutPage({
       setNumber: set.set_number,
       targetReps: set.target_reps,
       targetWeight: set.target_weight,
+      memo: set.memo,
     })),
   }));
 
@@ -110,6 +113,7 @@ export default async function WorkoutPage({
                       isBodyweight={ex.isBodyweight}
                       initialTargetReps={s.targetReps}
                       initialTargetWeight={s.targetWeight}
+                      initialMemo={s.memo}
                     />
                   ))}
                 </ul>
