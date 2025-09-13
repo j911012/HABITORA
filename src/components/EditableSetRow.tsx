@@ -2,6 +2,7 @@
 
 import { useCallback, useState, useTransition } from "react";
 import { updateSessionSet } from "@/app/actions/updateSessionSet";
+import { calcRm } from "@/lib/utils";
 
 type EditableSetRowProps = {
   setId: string;
@@ -25,6 +26,14 @@ export function EditableSetRow({
   const [memo, setMemo] = useState(initialMemo ?? "");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  // 最大挙上重量を計算
+  const rm = isBodyweight
+    ? null
+    : calcRm(
+        typeof weight === "number" ? weight : null,
+        typeof reps === "number" ? reps : null
+      );
 
   // セットを更新する
   const handleSave = useCallback(() => {
@@ -78,7 +87,9 @@ export function EditableSetRow({
         <span className="text-xs font-medium text-gray-500">
           Set {setNumber}
         </span>
-        <span className="text-xs text-gray-400">RM —</span>
+        <span className="text-xs text-gray-400">
+          RM {rm !== null ? `${rm.toFixed(1)} kg` : "—"}
+        </span>
       </div>
 
       <div
