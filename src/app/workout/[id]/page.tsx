@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { WorkoutSessionSync } from "@/components/WorkoutSessionSync";
 import { CompleteWorkoutButton } from "@/components/CompleteWorkoutButton";
 import { EditableSetRow } from "@/components/EditableSetRow";
+import { AddSetButton } from "@/components/AddSetButton";
 
 export const dynamic = "force-dynamic";
 
@@ -99,9 +100,7 @@ export default async function WorkoutPage({
                       {ex.name}
                     </h2>
                   </div>
-                  <Button variant="ghost" size="sm">
-                    ＋ セットを追加
-                  </Button>
+                  <AddSetButton sessionExerciseId={ex.id} />
                 </div>
 
                 <ul className="divide-y">
