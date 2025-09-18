@@ -86,7 +86,7 @@ export default async function WorkoutPage({
                   ホームに戻る
                 </Button>
               </Link>
-              <AddExerciseButton />
+              <AddExerciseButton sessionId={id} />
             </div>
           </header>
 
