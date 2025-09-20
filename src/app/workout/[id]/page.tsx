@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 type UiSet = {
   id: string;
   setNumber: number;
-  targetReps: number;
+  targetReps: number | null;
   targetWeight?: number | null;
   memo?: string | null;
 };
