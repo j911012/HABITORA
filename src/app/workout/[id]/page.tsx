@@ -6,13 +6,14 @@ import { WorkoutSessionSync } from "@/components/WorkoutSessionSync";
 import { CompleteWorkoutButton } from "@/components/CompleteWorkoutButton";
 import { EditableSetRow } from "@/components/EditableSetRow";
 import { AddSetButton } from "@/components/AddSetButton";
+import { AddExerciseButton } from "@/components/AddExerciseButton";
 
 export const dynamic = "force-dynamic";
 
 type UiSet = {
   id: string;
   setNumber: number;
-  targetReps: number;
+  targetReps: number | null;
   targetWeight?: number | null;
   memo?: string | null;
 };
@@ -85,9 +86,7 @@ export default async function WorkoutPage({
                   ホームに戻る
                 </Button>
               </Link>
-              <Button variant="secondary" size="sm">
-                ＋ メニューを追加
-              </Button>
+              <AddExerciseButton sessionId={id} />
             </div>
           </header>
 

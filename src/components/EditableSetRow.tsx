@@ -8,7 +8,7 @@ type EditableSetRowProps = {
   setId: string;
   setNumber: number;
   isBodyweight: boolean;
-  initialTargetReps: number;
+  initialTargetReps: number | null;
   initialTargetWeight?: number | null;
   initialMemo?: string | null;
 };
@@ -21,7 +21,7 @@ export function EditableSetRow({
   initialTargetWeight,
   initialMemo,
 }: EditableSetRowProps) {
-  const [reps, setReps] = useState<number | "">(initialTargetReps);
+  const [reps, setReps] = useState<number | "">(initialTargetReps ?? "");
   const [weight, setWeight] = useState<number | "">(initialTargetWeight ?? "");
   const [memo, setMemo] = useState(initialMemo ?? "");
   const [error, setError] = useState<string | null>(null);
