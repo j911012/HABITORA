@@ -3,6 +3,7 @@
 import { useCallback, useState, useTransition } from "react";
 import { updateSessionSet } from "@/app/actions/updateSessionSet";
 import { calcRm } from "@/lib/utils";
+import { Trash2 } from "lucide-react";
 
 type EditableSetRowProps = {
   setId: string;
@@ -142,20 +143,32 @@ export function EditableSetRow({
 
         <div className="sm:col-span-1">
           <label className="sr-only">メモ</label>
-          <input
-            type="text"
-            className="w-full h-10 border rounded px-3 text-sm"
-            placeholder="メモ（任意）"
-            value={memo}
-            onChange={(e) => setMemo(e.target.value)}
-            onBlur={handleSave}
-            disabled={isPending}
-          />
+          <div className="flex items-center gap-2 w-full">
+            <input
+              type="text"
+              className="w-full h-10 border rounded px-3 text-sm"
+              placeholder="メモ（任意）"
+              value={memo}
+              onChange={(e) => setMemo(e.target.value)}
+              onBlur={handleSave}
+              disabled={isPending}
+            />
+            <button
+              type="button"
+              aria-label="削除"
+              className="text-gray-400 hover:text-red-500 text-sm cursor-pointer"
+              // onClick={}
+              disabled={isPending}
+              title="削除"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div className="mt-3 flex items-center gap-3">
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+        <div className="mt-3 flex items-center gap-3">
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+        </div>
       </div>
     </li>
   );
