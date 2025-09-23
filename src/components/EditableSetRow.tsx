@@ -4,6 +4,8 @@ import { useCallback, useState, useTransition } from "react";
 import { updateSessionSet } from "@/app/actions/updateSessionSet";
 import { calcRm } from "@/lib/utils";
 import { Trash2 } from "lucide-react";
+import { deleteSessionSet } from "@/app/actions/deleteSessionSet";
+import { useRouter } from "next/navigation";
 
 type EditableSetRowProps = {
   setId: string;
@@ -27,6 +29,7 @@ export function EditableSetRow({
   const [memo, setMemo] = useState(initialMemo ?? "");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   // 最大挙上重量を計算
   const rm = isBodyweight
@@ -81,6 +84,19 @@ export function EditableSetRow({
     },
     [handleSave]
   );
+
+  // セットを削除する
+  const handleDelete = useCallback(() => {
+    setError(null);
+    startTransition(async () => {
+      const result = await deleteSessionSet(setId);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      router.refresh();
+    });
+  }, [setId, router]);
 
   return (
     <li className="p-4">
@@ -157,7 +173,7 @@ export function EditableSetRow({
               type="button"
               aria-label="削除"
               className="text-gray-400 hover:text-red-500 text-sm cursor-pointer"
-              // onClick={}
+              onClick={handleDelete}
               disabled={isPending}
               title="削除"
             >
