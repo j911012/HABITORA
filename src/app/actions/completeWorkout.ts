@@ -27,24 +27,9 @@ export async function completeWorkout(sessionId: string) {
   }
 
   const exerciseIds = (exercises ?? []).map((e) => e.id);
-  // メニューが無い場合はそのまま completed にする
-  if (exerciseIds.length === 0) {
-    const { error } = await supabase
-      .from("workout_sessions")
-      .update({
-        status: "completed",
-        completed_at: new Date().toISOString(),
-      })
-      .eq("id", sessionId);
-    if (error) {
-      console.error("complete update error:", error);
-      return { error: "ワークアウト完了に失敗しました" };
-    }
-    return {};
-  }
 
-  // 1) 空セット削除: reps も weight も NULL の行のみ
-  {
+  if (exerciseIds.length > 0) {
+    // 1) 空セット削除: reps も weight も NULL の行のみ
     const { error: delEmptySetsErr } = await supabase
       .from("session_sets")
       .delete()
@@ -55,38 +40,37 @@ export async function completeWorkout(sessionId: string) {
       console.error("delete empty sets error:", delEmptySetsErr);
       return { error: "空セットの削除に失敗しました" };
     }
-  }
 
-  // 2) 空メニュー削除: セットが1件も残っていないメニューを特定して削除
-  // 2-1) まだセットが残っているメニューIDを distinct 取得
-  const { data: hasSetRows, error: hasSetErr } = await supabase
-    .from("session_sets")
-    .select("session_exercise_id")
-    .in("session_exercise_id", exerciseIds);
+    // 2) 空メニュー削除: セットが1件も残っていないメニューを特定して削除
+    // 2-1) まだセットが残っているメニューIDを distinct 取得
+    const { data: hasSetRows, error: hasSetErr } = await supabase
+      .from("session_sets")
+      .select("session_exercise_id")
+      .in("session_exercise_id", exerciseIds);
 
-  if (hasSetErr) {
-    console.error("fetch non-empty exercises error:", hasSetErr);
-    return { error: "メニュー状態の確認に失敗しました" };
-  }
+    if (hasSetErr) {
+      console.error("fetch non-empty exercises error:", hasSetErr);
+      return { error: "メニュー状態の確認に失敗しました" };
+    }
 
-  const nonEmptyIds = new Set(
-    (hasSetRows ?? []).map(
-      (r: { session_exercise_id: string }) => r.session_exercise_id
-    )
-  );
-  const emptyExerciseIds = exerciseIds.filter((id) => !nonEmptyIds.has(id));
+    const nonEmptyIds = new Set(
+      (hasSetRows ?? []).map(
+        (r: { session_exercise_id: string }) => r.session_exercise_id
+      )
+    );
+    const emptyExerciseIds = exerciseIds.filter((id) => !nonEmptyIds.has(id));
 
-  if (emptyExerciseIds.length > 0) {
-    const { error: delEmptyExErr } = await supabase
-      .from("session_exercises")
-      .delete()
-      .in("id", emptyExerciseIds);
-    if (delEmptyExErr) {
-      console.error("delete empty exercises error:", delEmptyExErr);
-      return { error: "空メニューの削除に失敗しました" };
+    if (emptyExerciseIds.length > 0) {
+      const { error: delEmptyExErr } = await supabase
+        .from("session_exercises")
+        .delete()
+        .in("id", emptyExerciseIds);
+      if (delEmptyExErr) {
+        console.error("delete empty exercises error:", delEmptyExErr);
+        return { error: "空メニューの削除に失敗しました" };
+      }
     }
   }
-
   // 3) セッションを completed に更新
   const { error } = await supabase
     .from("workout_sessions")
